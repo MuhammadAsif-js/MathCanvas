@@ -10,8 +10,6 @@ const Menu = ({ className }: IconProps) => <span className={className}>☰</span
 const Search = ({ className }: IconProps) => <span className={className}>🔍</span>;
 const Calculator = ({ className }: IconProps) => <span className={className}>🧮</span>;
 
-// --- EDITOR SHELL COMPONENT ---
-
 interface EditorShellProps {
   children?: React.ReactNode;
   documentTitle?: string;
@@ -132,7 +130,7 @@ export function EditorShell({
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-xs text-slate-400 hidden sm:inline-block">Edited 2 mins ago</span>
+            <span className="text-xs text-slate-400 hidden sm:inline-block">Edited just now</span>
             <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-md shadow-sm transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
               Save
             </button>
@@ -147,97 +145,14 @@ export function EditorShell({
         <main className="flex-1 overflow-y-auto px-4 py-8 md:py-12 flex justify-center">
           {/* The "Page" Container */}
           <div className="bg-white max-w-4xl w-full min-h-[11in] shadow-sm ring-1 ring-slate-200/50 rounded-sm p-8 md:p-16">
+            
+            {/* This is where DocumentEditor gets injected! */}
             {children}
+            
           </div>
         </main>
 
       </div>
     </div>
-  );
-}
-
-
-// --- APP ENTRY POINT (Demo Usage) ---
-
-interface DocData {
-  id: string;
-  title: string;
-  type: string;
-  author: string;
-  content: string;
-}
-
-const initialDocs: DocData[] = [
-  { id: '1', title: 'Project Structural Calc', type: 'Computation Sheet', author: 'Jane Doe', content: 'Use this space to define your structural variables and mathematical equations.' },
-  { id: '2', title: 'Physics Homework', type: 'Assignment', author: 'Jane Doe', content: 'Kinematics and dynamics problems for week 3.' },
-  { id: '3', title: 'Q3 Revenue Projections', type: 'Financial Model', author: 'Jane Doe', content: 'Quarterly projections based on current sales trajectory.' },
-  { id: '4', title: 'Fluid Dynamics Model', type: 'Simulation', author: 'Jane Doe', content: 'Parameters for pipe flow.' },
-  { id: '5', title: 'Machine Learning Matrices', type: 'Notes', author: 'Jane Doe', content: 'Linear algebra review for neural networks.' }
-];
-
-export default function App() {
-  const [documents, setDocuments] = useState<DocData[]>(initialDocs);
-  const [activeDocId, setActiveDocId] = useState<string>(initialDocs[0].id);
-
-  // Find the currently active document data
-  const activeDoc = documents.find(d => d.id === activeDocId) || documents[0];
-
-  const handleNewDoc = () => {
-    const newDoc: DocData = {
-      id: Date.now().toString(),
-      title: 'Untitled Document',
-      type: 'Draft',
-      author: 'Jane Doe',
-      content: 'Start typing your new document here...'
-    };
-    // Add to top of the list and set as active
-    setDocuments([newDoc, ...documents]);
-    setActiveDocId(newDoc.id);
-  };
-
-  return (
-    <EditorShell 
-      documentTitle={activeDoc.title}
-      documents={documents}
-      activeDocId={activeDocId}
-      onSelectDoc={setActiveDocId}
-      onNewDoc={handleNewDoc}
-    >
-      <div className="group">
-        <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 outline-none empty:before:content-['Untitled_Document'] empty:before:text-slate-300">
-          {activeDoc.title}
-        </h1>
-      </div>
-      
-      <div className="flex items-center gap-2 mb-8 border-b border-slate-100 pb-4">
-        <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-1 rounded">{activeDoc.type}</span>
-        <span className="text-slate-400 text-sm">Author: {activeDoc.author}</span>
-      </div>
-
-      <div className="prose prose-slate max-w-none">
-        <p className="text-slate-500 text-lg">
-          {activeDoc.content}
-        </p>
-        
-        <div className="my-8 flex items-center gap-4 group cursor-text">
-          <div className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-            <Plus size={16} />
-          </div>
-          <p className="text-slate-400 italic m-0">Type '/' for commands, or start typing equations...</p>
-        </div>
-
-        {/* Mocking a rendered math block for visual flavor (only on doc 1) */}
-        {activeDoc.id === '1' && (
-          <div className="bg-slate-50 rounded-lg p-6 border border-slate-100 my-6 font-mono text-sm shadow-inner">
-            <div className="text-slate-400 mb-2">// Example Beam Load Calculation</div>
-            <div className="flex justify-between items-center text-slate-700">
-              <span>Force (F) = m * a</span>
-              <span className="text-emerald-600 font-semibold">= 450.5 N</span>
-            </div>
-          </div>
-        )}
-      </div>
-      
-    </EditorShell>
   );
 }

@@ -1,30 +1,32 @@
-"use client";
-
 import React from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 
-const MathBlockComponent = ({ node, updateAttributes }: any) => {
-  return (
-    // We MUST use NodeViewWrapper here, otherwise TipTap ignores it
-    <NodeViewWrapper className="math-block">
-      <div className="bg-slate-100 rounded p-3 my-4 border-l-4 border-blue-500 flex items-center gap-3 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-200">
-        
-        {/* Input area for the math formula */}
-        <input 
-          type="text" 
-          className="bg-transparent focus:outline-none flex-1 text-slate-800 font-mono text-sm"
-          placeholder="Enter equation (e.g. 50 + 50)..."
-          value={node.attrs.content}
-          onChange={(e) => updateAttributes({ content: e.target.value })}
-        />
-        
-        {/* Hardcoded result span for Day 3 */}
-        <span className="font-bold text-slate-700 whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm border border-slate-200">
-          = 999
-        </span>
+export default function MathBlockComponent(props: any) {
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    props.updateAttributes({
+      content: e.target.value,
+    });
+  };
+
+return (
+    <NodeViewWrapper 
+      className="math-block bg-gray-100 p-2 rounded-md my-2 flex items-center shadow-sm"
+      contentEditable={false} // <-- THIS TELLS TIPTAP TO BACK OFF
+    >
+      <input
+        className="bg-transparent border-none outline-none flex-grow font-mono text-gray-800 placeholder-gray-400"
+        type="text"
+        placeholder="Type math here (e.g., rent = 1200)"
+        value={props.node.attrs.content || ''}
+        onChange={handleInputChange}
+        onKeyDown={(e) => e.stopPropagation()} 
+        onClick={(e) => e.stopPropagation()} // <-- PREVENTS CLICKS FROM LEAKING OUT
+      />
+      
+      <div className="ml-4 font-mono font-bold text-blue-600 min-w-[3rem] text-right">
+        = {props.node.attrs.result || '???'}
       </div>
     </NodeViewWrapper>
   );
-};
-
-export default MathBlockComponent;
+}
