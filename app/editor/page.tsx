@@ -1,7 +1,7 @@
 "use client";
 
-import { EditorShell } from '../components/EditorShell';
-import { DocumentEditor } from '../components/DocumentEditor';
+import { EditorShell } from '../../components/EditorShell';
+import { DocumentEditor } from '../../components/DocumentEditor';
 
 export default function Home() {
   return (
