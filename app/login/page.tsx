@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, FunctionSquare, AlertCircle } from 'lucide-react';
+import { signInUser, signUpUser } from '../../lib/supabaseAuth';
 
 // --- Assets & Icons ---
 // Fixed TypeScript implicit 'any' error by defining the prop type
@@ -75,7 +76,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   
   // Dev B will hook this state up to Supabase error responses tomorrow
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState(false); 
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Styles based on error state
   const inputBaseStyle = "w-full bg-slate-950/50 border rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:ring-1 transition-all duration-300";
@@ -83,6 +89,35 @@ export default function LoginPage() {
   const inputErrorStyle = "border-red-500/50 focus:border-red-500/80 focus:ring-red-500/50 bg-red-950/10";
 
   const getStyle = () => hasError ? inputErrorStyle : inputNormalStyle;
+
+const handleSubmit = async (e: React.SyntheticEvent) => {
+    e.preventDefault(); 
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage(''); // Clear old errors when they try again
+
+ try {
+      // Automatically remove accidental blank spaces from the start/end
+      const cleanedEmail = email.trim(); 
+
+      if (isLogin) {
+        await signInUser(cleanedEmail, password); 
+      } else {
+        await signUpUser(cleanedEmail, password); 
+      }
+
+      // Success! Teleport them to the editor:
+      window.location.href = '/dashboard'; 
+
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      setHasError(true); 
+      // Grab the exact message from Supabase, or use a fallback
+      setErrorMessage(error.message || "An error occurred. Please try again."); 
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-8 font-sans relative">
@@ -122,20 +157,20 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Error Notification */}
+        {/* Error Notification (Animated & Dynamic) */}
         {hasError && (
           <motion.div 
             initial={{ opacity: 0, height: 0, marginBottom: 0 }}
             animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
-            className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg"
+            className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg overflow-hidden"
           >
-            <AlertCircle size={16} />
-            <span>Invalid email or password. Please try again.</span>
+            <AlertCircle size={16} className="shrink-0" />
+            <span>{errorMessage || "Invalid email or password. Please try again."}</span>
           </motion.div>
         )}
 
         {/* 2. Form Inputs */}
-        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Email Input */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-300">
@@ -143,10 +178,13 @@ export default function LoginPage() {
             </label>
             <div className="relative">
               <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${hasError ? 'text-red-400/70' : 'text-slate-500'} transition-colors`} size={18} />
-              <input 
+            <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className={`${inputBaseStyle} ${getStyle()}`}
+                required
               />
             </div>
           </div>
@@ -165,10 +203,13 @@ export default function LoginPage() {
             </div>
             <div className="relative">
               <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${hasError ? 'text-red-400/70' : 'text-slate-500'} transition-colors`} size={18} />
-              <input 
+             <input 
                 type={showPassword ? "text" : "password"} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className={`${inputBaseStyle} ${getStyle()} pr-10`}
+                required
               />
               <button 
                 type="button" 
@@ -181,11 +222,12 @@ export default function LoginPage() {
           </div>
 
           {/* 3. Primary Action */}
-          <button 
+       <button 
             type="submit"
-            className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 font-medium transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] active:scale-[0.98]"
+            disabled={isLoading}
+            className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 font-medium transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] active:scale-[0.98] disabled:opacity-50"
           >
-            {isLogin ? 'Sign In' : 'Sign Up'}
+            {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
 
