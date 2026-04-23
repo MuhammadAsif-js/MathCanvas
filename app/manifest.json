@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "MathCanvas",
+  "short_name": "MathCanvas",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
